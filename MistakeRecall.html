@@ -1,0 +1,2511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mistakes Recall</title>
+    <style>
+        :root {
+            --bg: #1a1a1f;
+            --surface: #242429;
+            --surface2: #2a2a30;
+            --surface3: #303036;
+            --border: #333338;
+            --text: #e4e4e9;
+            --text2: #b0b0b8;
+            --text3: #888890;
+            --accent: #5b9bff;
+            --accent-bg: #5b9bff18;
+            --accent-hover: #7ab4ff;
+            --danger: #e0556a;
+            --danger-bg: #e0556a18;
+            --success: #4caf84;
+            --warning: #e0a955;
+            --pin: #ffb74d;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+            --radius: 10px;
+            --radius-sm: 6px;
+            --radius-lg: 14px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            --sidebar-width: 260px;
+        }
+        .light-mode {
+            --bg: #f6f7f9;
+            --surface: #ffffff;
+            --surface2: #f0f1f4;
+            --surface3: #e8e9ed;
+            --border: #e2e3e8;
+            --text: #1a1a24;
+            --text2: #555560;
+            --text3: #888890;
+            --accent: #3b7de0;
+            --accent-bg: #3b7de012;
+            --accent-hover: #2b6dcf;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html {
+            font-size: 15px;
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            transition: background var(--transition), color var(--transition);
+            overflow-x: hidden;
+        }
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform var(--transition), background var(--transition), border var(--transition);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .sidebar-logo .logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .sidebar-section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text3);
+            padding: 16px 8px 6px;
+            font-weight: 600;
+            user-select: none;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-size: 0.9rem;
+            color: var(--text2);
+            user-select: none;
+            white-space: nowrap;
+            text-decoration: none;
+            position: relative;
+            font-weight: 500;
+        }
+        .sidebar-item:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+        .sidebar-item.active {
+            background: var(--accent-bg);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .sidebar-item .item-icon {
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+        .sidebar-item .item-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .sidebar-item .item-count {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--text3);
+            background: var(--surface3);
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+        .sidebar-item.pin-item .item-icon {
+            color: var(--pin);
+        }
+        .sidebar-footer {
+            padding: 10px 12px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .main-wrap {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin var(--transition);
+        }
+        .top-bar {
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transition: background var(--transition), border var(--transition);
+            flex-shrink: 0;
+        }
+        .top-bar .menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+        }
+        .top-bar .menu-btn:hover {
+            background: var(--surface2);
+        }
+        .top-bar .page-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            flex: 1;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all var(--transition);
+            font-family: var(--font);
+            white-space: nowrap;
+            letter-spacing: 0.1px;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: var(--shadow);
+        }
+        .btn-secondary {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            background: var(--surface3);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text2);
+            border: 1px solid transparent;
+        }
+        .btn-ghost:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+        .btn-danger {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.78rem;
+            border-radius: 4px;
+        }
+        .btn-icon {
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            border-radius: 50%;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        .btn-pin {
+            color: var(--pin);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all var(--transition);
+        }
+        .btn-pin:hover {
+            background: #ffb74d20;
+        }
+        .btn-pin.pinned {
+            color: #f0a030;
+        }
+        .content {
+            padding: 24px;
+            flex: 1;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .content.wide {
+            max-width: 1300px;
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            transition: all var(--transition);
+            box-shadow: var(--shadow);
+        }
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--surface3);
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+        }
+        .card-grid.small {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 10px;
+        }
+        .mistake-card {
+            position: relative;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all var(--transition);
+        }
+        .mistake-card.pinned-card {
+            border-left-color: var(--pin);
+            background: var(--surface2);
+        }
+        .mistake-card .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .mistake-card .card-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            flex: 1;
+            letter-spacing: -0.1px;
+        }
+        .mistake-card .card-meta {
+            font-size: 0.75rem;
+            color: var(--text3);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .mistake-card .card-body {
+            font-size: 0.85rem;
+            color: var(--text2);
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+        .mistake-card .card-correction {
+            background: var(--surface3);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-size: 0.84rem;
+            color: var(--text);
+            border-left: 3px solid var(--accent);
+        }
+        .mistake-card .card-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: var(--surface3);
+            color: var(--text2);
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .tag.formula {
+            background: #5b9bff20;
+            color: #5b9bff;
+        }
+        .tag.sign {
+            background: #e0a95520;
+            color: #e0a955;
+        }
+        .tag.method {
+            background: #4caf8420;
+            color: #4caf84;
+        }
+        .tag.concept {
+            background: #a855f720;
+            color: #a855f7;
+        }
+        .tag.carelessness {
+            background: #e0556a20;
+            color: #e0556a;
+        }
+        .tag.exam-trap {
+            background: #f9731620;
+            color: #f97316;
+        }
+        .card-actions {
+            display: flex;
+            gap: 4px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .subject-card {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            transition: all var(--transition);
+        }
+        .subject-card:hover {
+            transform: translateY(-2px);
+        }
+        .subject-card .subject-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            color: #fff;
+            font-weight: 600;
+        }
+        .subject-card .subject-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .subject-card .subject-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .subject-card .subject-meta {
+            font-size: 0.75rem;
+            color: var(--text3);
+        }
+        .review-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: background var(--transition);
+        }
+        .review-card-wrap {
+            max-width: 650px;
+            width: 100%;
+            perspective: 1000px;
+        }
+        .review-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px 28px;
+            box-shadow: var(--shadow-lg);
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            transition: all var(--transition);
+            position: relative;
+        }
+        .review-card .r-subject {
+            font-size: 0.8rem;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+        }
+        .review-card .r-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            margin-bottom: 14px;
+            line-height: 1.3;
+        }
+        .review-card .r-explanation {
+            font-size: 0.95rem;
+            color: var(--text2);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        .review-card .r-correction {
+            background: var(--surface3);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            font-size: 0.95rem;
+            color: var(--text);
+            border-left: 4px solid var(--accent);
+            line-height: 1.6;
+        }
+        .review-card .r-formula {
+            font-family: var(--font-mono);
+            background: var(--surface2);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--accent);
+            letter-spacing: 0.3px;
+        }
+        .review-card .r-pinned-badge {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 1.3rem;
+            color: var(--pin);
+        }
+        .review-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .review-nav .nav-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition);
+        }
+        .review-nav .nav-btn:hover {
+            background: var(--surface2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .review-nav .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .review-progress {
+            font-size: 0.85rem;
+            color: var(--text3);
+            font-weight: 500;
+            min-width: 70px;
+            text-align: center;
+        }
+        .review-close {
+            position: fixed;
+            top: 16px;
+            right: 20px;
+            z-index: 210;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            transition: all var(--transition);
+            font-family: var(--font);
+        }
+        .review-close:hover {
+            background: var(--surface3);
+        }
+        .review-empty {
+            text-align: center;
+            color: var(--text3);
+            font-size: 1.1rem;
+            padding: 40px;
+        }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.15s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: slideUp 0.2s ease;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .modal h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.2px;
+        }
+        .modal .form-group {
+            margin-bottom: 14px;
+        }
+        .modal label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text2);
+            margin-bottom: 5px;
+            letter-spacing: 0.2px;
+            text-transform: uppercase;
+        }
+        .modal input,
+        .modal textarea,
+        .modal select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            font-size: 0.9rem;
+            font-family: var(--font);
+            transition: all var(--transition);
+            resize: vertical;
+        }
+        .modal input:focus,
+        .modal textarea:focus,
+        .modal select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-bg);
+        }
+        .modal textarea {
+            min-height: 80px;
+        }
+        .modal .form-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+        .modal .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .modal .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            transition: all var(--transition);
+            user-select: none;
+            font-weight: 500;
+            color: var(--text2);
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .modal .checkbox-label:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+        .modal .checkbox-label input {
+            width: auto;
+            accent-color: var(--accent);
+        }
+        .modal .color-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .modal .color-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all var(--transition);
+        }
+        .modal .color-dot:hover {
+            transform: scale(1.15);
+        }
+        .modal .color-dot.selected {
+            border-color: var(--text);
+            box-shadow: 0 0 0 4px var(--accent-bg);
+        }
+        .search-bar-wrap {
+            position: relative;
+            max-width: 500px;
+            width: 100%;
+        }
+        .search-bar-wrap input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            font-size: 0.9rem;
+            font-family: var(--font);
+            transition: all var(--transition);
+        }
+        .search-bar-wrap input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-bg);
+        }
+        .search-bar-wrap .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text3);
+            font-size: 1rem;
+            pointer-events: none;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text3);
+        }
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+        .empty-state p {
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+        }
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        .stat-card .stat-num {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--accent);
+        }
+        .stat-card .stat-label {
+            font-size: 0.75rem;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface3);
+            color: var(--text);
+            padding: 10px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            z-index: 400;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            animation: slideUp 0.2s ease;
+            font-weight: 500;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-wrap {
+                margin-left: 0 !important;
+            }
+            .top-bar .menu-btn {
+                display: block;
+            }
+            .content {
+                padding: 16px;
+            }
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            .stat-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .review-card {
+                padding: 20px 16px;
+            }
+            .review-card .r-title {
+                font-size: 1.15rem;
+            }
+            .modal {
+                max-width: 95vw;
+                padding: 18px;
+                max-height: 90vh;
+            }
+            .top-bar {
+                padding: 10px 16px;
+            }
+        }
+        @media (max-width: 480px) {
+            .stat-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            .btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            .review-nav .nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text3);
+        }
+        .hidden {
+            display: none !important;
+        }
+        .text-muted {
+            color: var(--text3);
+            font-size: 0.8rem;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .flex-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .flex-between {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo" onclick="window.MR.navigateTo('dashboard')" title="Mistakes Recall">
+                <span class="logo-icon">📝</span> Mistakes Recall
+            </div>
+        </div>
+        <nav class="sidebar-nav" id="sidebarNav">
+            <div class="sidebar-item active" data-view="dashboard" onclick="window.MR.navigateTo('dashboard')">
+                <span class="item-icon">🏠</span> Dashboard
+            </div>
+            <div class="sidebar-item" data-view="search" onclick="window.MR.navigateTo('search')">
+                <span class="item-icon">🔍</span> Search
+            </div>
+            <div class="sidebar-item" data-view="recallGroups" onclick="window.MR.navigateTo('recallGroups')">
+                <span class="item-icon">📦</span> Recall Groups
+            </div>
+            <div class="sidebar-item pin-item" data-view="pinned" onclick="window.MR.navigateTo('pinned')">
+                <span class="item-icon">📌</span> Pinned Mistakes
+            </div>
+            <div class="sidebar-section-label">Subjects</div>
+            <div id="sidebarSubjects"></div>
+            <div class="sidebar-item" onclick="window.MR.openSubjectModal()" style="color:var(--accent);">
+                <span class="item-icon">+</span> Add Subject
+            </div>
+            <div class="sidebar-section-label">Recall Groups</div>
+            <div id="sidebarGroups"></div>
+            <div class="sidebar-item" onclick="window.MR.openGroupModal()" style="color:var(--accent);">
+                <span class="item-icon">+</span> Add Group
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-item" onclick="window.MR.navigateTo('settings')">
+                <span class="item-icon">⚙️</span> Settings
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main-wrap" id="mainWrap">
+        <div class="top-bar" id="topBar">
+            <button class="menu-btn" onclick="window.MR.toggleSidebar()" aria-label="Menu">☰</button>
+            <span class="page-title" id="pageTitle">Dashboard</span>
+            <button class="btn btn-primary btn-sm" onclick="window.MR.openMistakeModal()" title="Fast Add (N)" id="fastAddBtn">
+                + Add Mistake
+            </button>
+        </div>
+        <div class="content" id="mainContent"></div>
+    </div>
+
+    <!-- Modals container -->
+    <div id="modalContainer"></div>
+
+    <!-- Review overlay -->
+    <div id="reviewOverlay" class="review-overlay hidden"></div>
+
+    <!-- Toast container -->
+    <div id="toastContainer"></div>
+
+    <script>
+        (function() {
+            // ────────────────────────────────────
+            // DATA LAYER
+            // ────────────────────────────────────
+            const STORAGE_KEY = 'mistakes_recall_data_v2';
+            const DEFAULT_DATA = {
+                subjects: [],
+                lessons: [],
+                mistakes: [],
+                recallGroups: [],
+                settings: { darkMode: true, accentColor: '#5b9bff', confirmDelete: true }
+            };
+
+            function loadData() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        return {
+                            subjects: parsed.subjects || [],
+                            lessons: parsed.lessons || [],
+                            mistakes: parsed.mistakes || [],
+                            recallGroups: parsed.recallGroups || [],
+                            settings: { ...DEFAULT_DATA.settings, ...(parsed.settings || {}) }
+                        };
+                    }
+                } catch (e) { /* fall through */ }
+                return JSON.parse(JSON.stringify(DEFAULT_DATA));
+            }
+
+            function saveData() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                } catch (e) {
+                    showToast('⚠️ Could not save — storage full');
+                }
+            }
+
+            let data = loadData();
+
+            function applySettings() {
+                if (data.settings.darkMode) {
+                    document.body.classList.remove('light-mode');
+                } else {
+                    document.body.classList.add('light-mode');
+                }
+                document.documentElement.style.setProperty('--accent', data.settings.accentColor);
+                document.documentElement.style.setProperty('--accent-bg', data.settings.accentColor + '18');
+                document.documentElement.style.setProperty('--accent-hover',
+                    data.settings.accentColor.replace('ff', 'ee').replace('5b9b', '7ab4'));
+            }
+            applySettings();
+
+            // ────────────────────────────────────
+            // STATE
+            // ────────────────────────────────────
+            const state = {
+                currentView: 'dashboard',
+                currentSubjectId: null,
+                currentLessonId: null,
+                currentGroupId: null,
+                reviewQueue: [],
+                reviewIndex: 0,
+                reviewShuffle: false,
+                reviewLabel: 'Review',
+                sidebarOpen: false,
+                searchQuery: '',
+                filterSubject: null,
+                filterLesson: null,
+                filterGroup: null,
+            };
+
+            // ────────────────────────────────────
+            // HELPERS
+            // ────────────────────────────────────
+            function genId() {
+                return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+            }
+
+            function getSubject(id) { return data.subjects.find(s => s.id === id); }
+
+            function getLesson(id) { return data.lessons.find(l => l.id === id); }
+
+            function getMistake(id) { return data.mistakes.find(m => m.id === id); }
+
+            function getGroup(id) { return data.recallGroups.find(g => g.id === id); }
+
+            function getLessonsBySubject(subjectId) { return data.lessons.filter(l => l.subjectId === subjectId); }
+
+            function getMistakesByLesson(lessonId) { return data.mistakes.filter(m => m.lessonId === lessonId); }
+
+            function getMistakesBySubject(subjectId) {
+                const lessonIds = data.lessons.filter(l => l.subjectId === subjectId).map(l => l.id);
+                return data.mistakes.filter(m => lessonIds.includes(m.lessonId));
+            }
+
+            function getMistakesByGroup(groupId) {
+                const group = getGroup(groupId);
+                if (!group) return [];
+                const mistakeSet = new Set(group.mistakeIds || []);
+                (group.lessonIds || []).forEach(lid => {
+                    getMistakesByLesson(lid).forEach(m => mistakeSet.add(m.id));
+                });
+                return data.mistakes.filter(m => mistakeSet.has(m.id));
+            }
+
+            function getSubjectMistakeCount(subjectId) {
+                return getMistakesBySubject(subjectId).length;
+            }
+
+            function getLessonMistakeCount(lessonId) {
+                return getMistakesByLesson(lessonId).length;
+            }
+
+            function getAllMistakes() {
+                return [...data.mistakes];
+            }
+
+            function getPinnedMistakes() {
+                return data.mistakes.filter(m => m.pinned);
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                const now = new Date();
+                const diff = now - d;
+                if (diff < 86400000) return 'Today';
+                if (diff < 172800000) return 'Yesterday';
+                if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+
+            function shuffleArray(arr) {
+                const a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str || '';
+                return div.innerHTML;
+            }
+
+            function showToast(msg) {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = msg;
+                container.appendChild(toast);
+                setTimeout(() => { toast.remove(); }, 2200);
+            }
+
+            // ────────────────────────────────────
+            // NAVIGATION
+            // ────────────────────────────────────
+            function navigateTo(view, params = {}) {
+                state.currentView = view;
+                state.currentSubjectId = params.subjectId || null;
+                state.currentLessonId = params.lessonId || null;
+                state.currentGroupId = params.groupId || null;
+                state.searchQuery = params.query || '';
+                state.filterSubject = params.filterSubject || null;
+                state.filterLesson = params.filterLesson || null;
+                state.filterGroup = params.filterGroup || null;
+                if (view !== 'review') {
+                    state.reviewQueue = [];
+                    state.reviewIndex = 0;
+                }
+                renderAll();
+                if (window.innerWidth <= 768) {
+                    state.sidebarOpen = false;
+                    document.getElementById('sidebar').classList.remove('open');
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function startReview(queueOrFn, label) {
+                let queue;
+                if (typeof queueOrFn === 'function') {
+                    queue = queueOrFn();
+                } else if (Array.isArray(queueOrFn)) {
+                    queue = [...queueOrFn];
+                } else {
+                    queue = [];
+                }
+                if (!queue || queue.length === 0) {
+                    showToast('No mistakes to review.');
+                    return;
+                }
+                const pinned = queue.filter(m => m.pinned);
+                const unpinned = queue.filter(m => !m.pinned);
+                let sorted = [...pinned, ...unpinned];
+                if (state.reviewShuffle) {
+                    sorted = [...shuffleArray(pinned), ...shuffleArray(unpinned)];
+                }
+                state.reviewQueue = sorted;
+                state.reviewIndex = 0;
+                state.currentView = 'review';
+                state.reviewLabel = label || 'Review';
+                renderAll();
+            }
+
+            // ────────────────────────────────────
+            // RENDER ALL
+            // ────────────────────────────────────
+            function renderAll() {
+                try {
+                    renderSidebar();
+                    renderMainContent();
+                    renderReviewOverlay();
+                    updatePageTitle();
+                    updateActiveSidebarItem();
+                } catch (e) {
+                    console.error('Render error:', e);
+                }
+            }
+
+            function updatePageTitle() {
+                const titles = {
+                    dashboard: 'Dashboard',
+                    subjectDetail: 'Subject',
+                    lessonDetail: 'Lesson',
+                    recallGroups: 'Recall Groups',
+                    groupDetail: 'Recall Group',
+                    search: 'Search',
+                    pinned: 'Pinned Mistakes',
+                    settings: 'Settings',
+                    review: state.reviewLabel || 'Exam Recall',
+                };
+                const titleEl = document.getElementById('pageTitle');
+                if (titleEl) titleEl.textContent = titles[state.currentView] || 'Mistakes Recall';
+            }
+
+            function updateActiveSidebarItem() {
+                document.querySelectorAll('#sidebarNav .sidebar-item').forEach(el => el.classList.remove('active'));
+                let sel = null;
+                if (state.currentView === 'dashboard') sel = '[data-view="dashboard"]';
+                else if (state.currentView === 'search') sel = '[data-view="search"]';
+                else if (state.currentView === 'recallGroups') sel = '[data-view="recallGroups"]';
+                else if (state.currentView === 'pinned') sel = '[data-view="pinned"]';
+                else if (state.currentView === 'subjectDetail' && state.currentSubjectId)
+                    sel = `[data-subject-id="${state.currentSubjectId}"]`;
+                else if (state.currentView === 'groupDetail' && state.currentGroupId)
+                    sel = `[data-group-id="${state.currentGroupId}"]`;
+                if (sel) {
+                    const el = document.querySelector(`#sidebarNav ${sel}`);
+                    if (el) el.classList.add('active');
+                }
+            }
+
+            function renderSidebar() {
+                const subContainer = document.getElementById('sidebarSubjects');
+                if (subContainer) {
+                    subContainer.innerHTML = data.subjects.map(s => {
+                        const count = getSubjectMistakeCount(s.id);
+                        return `
+                  <div class="sidebar-item" data-subject-id="${s.id}" onclick="window.MR.navigateTo('subjectDetail',{subjectId:'${s.id}'})">
+                    <span class="item-dot" style="background:${s.color || '#5b9bff'};"></span>
+                    ${escapeHtml(s.name)}
+                    <span class="item-count">${count}</span>
+                  </div>`;
+                    }).join('');
+                }
+                const grpContainer = document.getElementById('sidebarGroups');
+                if (grpContainer) {
+                    grpContainer.innerHTML = data.recallGroups.map(g => {
+                        const count = getMistakesByGroup(g.id).length;
+                        return `
+                  <div class="sidebar-item" data-group-id="${g.id}" onclick="window.MR.navigateTo('groupDetail',{groupId:'${g.id}'})">
+                    <span class="item-dot" style="background:${g.color || '#a855f7'};"></span>
+                    ${escapeHtml(g.name)}
+                    <span class="item-count">${count}</span>
+                  </div>`;
+                    }).join('');
+                }
+            }
+
+            // ────────────────────────────────────
+            // MAIN CONTENT RENDERER
+            // ────────────────────────────────────
+            function renderMainContent() {
+                const container = document.getElementById('mainContent');
+                if (!container) return;
+                let html = '';
+                switch (state.currentView) {
+                    case 'dashboard':
+                        html = renderDashboard();
+                        break;
+                    case 'subjectDetail':
+                        html = renderSubjectDetail();
+                        break;
+                    case 'lessonDetail':
+                        html = renderLessonDetail();
+                        break;
+                    case 'recallGroups':
+                        html = renderRecallGroupsList();
+                        break;
+                    case 'groupDetail':
+                        html = renderGroupDetail();
+                        break;
+                    case 'search':
+                        html = renderSearchView();
+                        break;
+                    case 'pinned':
+                        html = renderPinnedView();
+                        break;
+                    case 'settings':
+                        html = renderSettings();
+                        break;
+                    default:
+                        html = renderDashboard();
+                }
+                container.innerHTML = html;
+            }
+
+            function renderDashboard() {
+                const totalMistakes = data.mistakes.length;
+                const totalSubjects = data.subjects.length;
+                const totalLessons = data.lessons.length;
+                const totalGroups = data.recallGroups.length;
+                const recentMistakes = [...data.mistakes].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
+                    .slice(0, 5);
+                const pinnedCount = data.mistakes.filter(m => m.pinned).length;
+
+                let recentHtml = '';
+                if (recentMistakes.length === 0) {
+                    recentHtml = `
+                <div class="empty-state">
+                  <div class="empty-icon">📝</div>
+                  <p>No mistakes yet. Start by adding your first mistake!</p>
+                  <button class="btn btn-primary" onclick="window.MR.openMistakeModal()">+ Add Your First Mistake</button>
+                </div>`;
+                } else {
+                    recentHtml = recentMistakes.map(m => {
+                        const subj = getSubject(m.subjectId);
+                        const less = getLesson(m.lessonId);
+                        return `
+                  <div class="card mistake-card ${m.pinned ? 'pinned-card' : ''}" style="cursor:pointer;" onclick="window.MR.navigateTo('lessonDetail',{lessonId:'${m.lessonId}',subjectId:'${m.subjectId}'})">
+                    <div class="card-header">
+                      <span class="card-title">${escapeHtml(m.title)}</span>
+                      ${m.pinned ? '<span style="color:var(--pin);">📌</span>' : ''}
+                    </div>
+                    <div class="card-meta">
+                      <span style="color:${subj?.color || 'var(--accent)'};">${escapeHtml(subj?.name || '?')}</span>
+                      <span>·</span>
+                      <span>${escapeHtml(less?.name || '?')}</span>
+                      <span>·</span>
+                      <span>${formatDate(m.dateAdded)}</span>
+                    </div>
+                  </div>`;
+                    }).join('');
+                }
+
+                return `
+            <div class="stat-row">
+              <div class="stat-card">
+                <div class="stat-num">${totalMistakes}</div>
+                <div class="stat-label">Total Mistakes</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-num">${totalSubjects}</div>
+                <div class="stat-label">Subjects</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-num">${totalLessons}</div>
+                <div class="stat-label">Lessons</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-num">${pinnedCount}</div>
+                <div class="stat-label">📌 Pinned</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-num">${totalGroups}</div>
+                <div class="stat-label">Recall Groups</div>
+              </div>
+            </div>
+            <div class="flex-between mb-16">
+              <h3 style="font-size:1.05rem;font-weight:600;">Recent Mistakes</h3>
+              <div class="flex-row gap-8">
+                <button class="btn btn-secondary btn-sm" onclick="window.MR.startReview(window.MR.getAllMistakes,'All Mistakes')">📋 Review All</button>
+                <button class="btn btn-primary btn-sm" onclick="window.MR.openMistakeModal()">+ Add</button>
+              </div>
+            </div>
+            <div class="card-grid">${recentHtml}</div>
+            ${totalMistakes > 5 ? `<p class="text-muted" style="margin-top:12px;text-align:center;">Showing 5 most recent · <a href="#" onclick="window.MR.navigateTo('search');return false;" style="color:var(--accent);">View all ${totalMistakes}</a></p>` : ''}
+          `;
+            }
+
+            function renderSubjectDetail() {
+                const subj = getSubject(state.currentSubjectId);
+                if (!subj) return '<p>Subject not found.</p>';
+                const lessons = getLessonsBySubject(subj.id);
+                const allMistakes = getMistakesBySubject(subj.id);
+
+                let lessonsHtml = '';
+                if (lessons.length === 0) {
+                    lessonsHtml =
+                        '<div class="empty-state"><p>No lessons yet. Add a lesson to start organizing mistakes.</p></div>';
+                } else {
+                    lessonsHtml = lessons.map(l => {
+                        const count = getLessonMistakeCount(l.id);
+                        return `
+                  <div class="card subject-card" onclick="window.MR.navigateTo('lessonDetail',{lessonId:'${l.id}',subjectId:'${subj.id}'})" style="border-left:3px solid ${subj.color};">
+                    <div class="subject-icon" style="background:${subj.color};">📖</div>
+                    <div class="subject-info">
+                      <div class="subject-name">${escapeHtml(l.name)}</div>
+                      <div class="subject-meta">${count} mistake${count !== 1 ? 's' : ''}</div>
+                    </div>
+                    <span style="color:var(--text3);">→</span>
+                  </div>`;
+                    }).join('');
+                }
+
+                const subjNameEscaped = escapeHtml(subj.name);
+                const subjId = subj.id;
+
+                return `
+            <div class="flex-between mb-16">
+              <div>
+                <h2 style="font-size:1.3rem;font-weight:700;display:flex;align-items:center;gap:10px;">
+                  <span style="display:inline-block;width:36px;height:36px;border-radius:8px;background:${subj.color};color:#fff;text-align:center;line-height:36px;font-size:1.2rem;">📘</span>
+                  ${subjNameEscaped}
+                </h2>
+                ${subj.description ? `<p class="text-muted">${escapeHtml(subj.description)}</p>` : ''}
+              </div>
+              <div class="flex-row gap-8">
+                <button class="btn btn-secondary btn-sm" onclick="window.MR.startReview(function(){return window.MR.getMistakesBySubjectId('${subjId}');},'${subjNameEscaped} Review')">📋 Review Subject</button>
+                <button class="btn btn-primary btn-sm" onclick="window.MR.openLessonModal('${subjId}')">+ Add Lesson</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.MR.openSubjectModal('${subjId}')">✏️ Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="window.MR.deleteSubject('${subjId}')">🗑️</button>
+              </div>
+            </div>
+            <h3 style="font-size:1rem;font-weight:600;margin-bottom:10px;">Lessons (${lessons.length})</h3>
+            <div class="card-grid small">${lessonsHtml}</div>
+            ${allMistakes.length > 0 ? `
+              <div style="margin-top:20px;">
+                <h3 style="font-size:1rem;font-weight:600;margin-bottom:10px;">All Mistakes in ${subjNameEscaped} (${allMistakes.length})</h3>
+                <div class="card-grid small">
+                  ${allMistakes.slice(0,8).map(m => renderMiniMistakeCard(m)).join('')}
+                </div>
+                ${allMistakes.length > 8 ? `<p class="text-muted" style="margin-top:8px;">+ ${allMistakes.length - 8} more</p>` : ''}
+              </div>
+            ` : ''}
+          `;
+            }
+
+            function renderMiniMistakeCard(m) {
+                const less = getLesson(m.lessonId);
+                return `
+            <div class="card mistake-card ${m.pinned ? 'pinned-card' : ''}" style="cursor:pointer;" onclick="window.MR.navigateTo('lessonDetail',{lessonId:'${m.lessonId}',subjectId:'${m.subjectId}'})">
+              <div class="card-header">
+                <span class="card-title" style="font-size:0.85rem;">${escapeHtml(m.title)}</span>
+                ${m.pinned ? '<span style="color:var(--pin);font-size:0.8rem;">📌</span>' : ''}
+              </div>
+              <div class="card-meta">${escapeHtml(less?.name || '')} · ${formatDate(m.dateAdded)}</div>
+            </div>`;
+            }
+
+            function renderLessonDetail() {
+                const lesson = getLesson(state.currentLessonId);
+                if (!lesson) return '<p>Lesson not found.</p>';
+                const subj = getSubject(lesson.subjectId);
+                const mistakes = getMistakesByLesson(lesson.id);
+                const pinnedMistakes = mistakes.filter(m => m.pinned);
+                const unpinnedMistakes = mistakes.filter(m => !m.pinned);
+                const sortedMistakes = [...pinnedMistakes, ...unpinnedMistakes];
+                const lessonId = lesson.id;
+                const subjectId = lesson.subjectId;
+                const lessonNameEscaped = escapeHtml(lesson.name);
+
+                let mistakesHtml = '';
+                if (sortedMistakes.length === 0) {
+                    mistakesHtml =
+                        '<div class="empty-state"><div class="empty-icon">💡</div><p>No mistakes in this lesson yet.</p><button class="btn btn-primary" onclick="window.MR.openMistakeModal(\'' +
+                        subjectId + '\',\'' + lessonId + '\')">+ Add Mistake</button></div>';
+                } else {
+                    mistakesHtml = sortedMistakes.map(m => renderFullMistakeCard(m)).join('');
+                }
+
+                return `
+            <div class="flex-between mb-16">
+              <div>
+                <a href="#" onclick="window.MR.navigateTo('subjectDetail',{subjectId:'${subjectId}'});return false;" style="color:var(--accent);font-size:0.85rem;">← Back to ${escapeHtml(subj?.name || 'Subject')}</a>
+                <h2 style="font-size:1.2rem;font-weight:700;">📖 ${lessonNameEscaped}</h2>
+                ${lesson.note ? `<p class="text-muted">${escapeHtml(lesson.note)}</p>` : ''}
+              </div>
+              <div class="flex-row gap-8">
+                <button class="btn btn-secondary btn-sm" onclick="window.MR.startReview(function(){return window.MR.getMistakesByLessonId('${lessonId}');},'${lessonNameEscaped} Review')">📋 Review Lesson</button>
+                <button class="btn btn-primary btn-sm" onclick="window.MR.openMistakeModal('${subjectId}','${lessonId}')">+ Add Mistake</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.MR.openLessonModal('${subjectId}','${lessonId}')">✏️ Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="window.MR.deleteLesson('${lessonId}')">🗑️</button>
+              </div>
+            </div>
+            <div class="card-grid">${mistakesHtml}</div>
+          `;
+            }
+
+            function renderFullMistakeCard(m) {
+                const subj = getSubject(m.subjectId);
+                const less = getLesson(m.lessonId);
+                const tagsHtml = (m.tags || []).map(t => {
+                    const cls = t.toLowerCase().replace(/\s+/g, '-');
+                    return `<span class="tag ${cls}">${escapeHtml(t)}</span>`;
+                }).join('');
+                const mid = m.id;
+                const msid = m.subjectId;
+                const mlid = m.lessonId;
+                return `
+            <div class="card mistake-card ${m.pinned ? 'pinned-card' : ''}" id="mistake-${mid}">
+              <div class="card-header">
+                <span class="card-title">${escapeHtml(m.title)}</span>
+                <button class="btn-pin ${m.pinned ? 'pinned' : ''}" onclick="event.stopPropagation();window.MR.togglePin('${mid}')" title="Pin">📌</button>
+              </div>
+              <div class="card-meta">
+                <span style="color:${subj?.color || 'var(--accent)'};">${escapeHtml(subj?.name || '?')}</span>
+                <span>·</span>
+                <span>${escapeHtml(less?.name || '?')}</span>
+                <span>·</span>
+                <span>${formatDate(m.dateAdded)}</span>
+              </div>
+              ${m.explanation ? `<div class="card-body">${escapeHtml(m.explanation)}</div>` : ''}
+              ${m.correction ? `<div class="card-correction">💡 ${escapeHtml(m.correction)}</div>` : ''}
+              ${m.formula ? `<div class="r-formula" style="margin-top:8px;">${escapeHtml(m.formula)}</div>` : ''}
+              ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ''}
+              ${m.image ? `<div style="margin-top:8px;"><img src="${m.image}" alt="screenshot" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid var(--border);" /></div>` : ''}
+              <div class="card-actions">
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.MR.openMistakeModal('${msid}','${mlid}','${mid}')">✏️ Edit</button>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();window.MR.duplicateMistake('${mid}')">📋 Duplicate</button>
+                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();window.MR.deleteMistake('${mid}')">🗑️</button>
+              </div>
+            </div>`;
+            }
+
+            function renderRecallGroupsList() {
+                if (data.recallGroups.length === 0) {
+                    return `
+                <div class="flex-between mb-16">
+                  <h2 style="font-size:1.2rem;font-weight:700;">📦 Recall Groups</h2>
+                  <button class="btn btn-primary btn-sm" onclick="window.MR.openGroupModal()">+ Create Group</button>
+                </div>
+                <div class="empty-state">
+                  <div class="empty-icon">📦</div>
+                  <p>No recall groups yet. Bundle specific lessons together for focused exam review.</p>
+                  <button class="btn btn-primary" onclick="window.MR.openGroupModal()">Create Your First Group</button>
+                </div>`;
+                }
+                const groupsHtml = data.recallGroups.map(g => {
+                    const count = getMistakesByGroup(g.id).length;
+                    const gid = g.id;
+                    const gnameEscaped = escapeHtml(g.name);
+                    return `
+                <div class="card subject-card" onclick="window.MR.navigateTo('groupDetail',{groupId:'${gid}'})" style="border-left:3px solid ${g.color};">
+                  <div class="subject-icon" style="background:${g.color};">📦</div>
+                  <div class="subject-info">
+                    <div class="subject-name">${gnameEscaped}</div>
+                    <div class="subject-meta">${count} mistake${count !== 1 ? 's' : ''} · ${(g.lessonIds || []).length} lesson(s)</div>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();window.MR.startReview(function(){return window.MR.getMistakesByGroupId('${gid}');},'${gnameEscaped} Review')">📋 Review</button>
+                </div>`;
+                }).join('');
+                return `
+            <div class="flex-between mb-16">
+              <h2 style="font-size:1.2rem;font-weight:700;">📦 Recall Groups</h2>
+              <button class="btn btn-primary btn-sm" onclick="window.MR.openGroupModal()">+ Create Group</button>
+            </div>
+            <div class="card-grid small">${groupsHtml}</div>`;
+            }
+
+            function renderGroupDetail() {
+                const group = getGroup(state.currentGroupId);
+                if (!group) return '<p>Group not found.</p>';
+                const mistakes = getMistakesByGroup(group.id);
+                const pinnedMistakes = mistakes.filter(m => m.pinned);
+                const unpinnedMistakes = mistakes.filter(m => !m.pinned);
+                const sorted = [...pinnedMistakes, ...unpinnedMistakes];
+                const linkedLessons = (group.lessonIds || []).map(id => getLesson(id)).filter(Boolean);
+                const linkedMistakes = (group.mistakeIds || []).map(id => getMistake(id)).filter(Boolean);
+                const gid = group.id;
+                const gnameEscaped = escapeHtml(group.name);
+
+                return `
+            <div class="flex-between mb-16">
+              <div>
+                <h2 style="font-size:1.2rem;font-weight:700;display:flex;align-items:center;gap:10px;">
+                  <span style="display:inline-block;width:36px;height:36px;border-radius:8px;background:${group.color};color:#fff;text-align:center;line-height:36px;">📦</span>
+                  ${gnameEscaped}
+                </h2>
+                <p class="text-muted">${linkedLessons.length} lesson(s) linked · ${linkedMistakes.length} individual mistake(s) linked</p>
+              </div>
+              <div class="flex-row gap-8">
+                <button class="btn btn-secondary btn-sm" onclick="window.MR.startReview(function(){return window.MR.getMistakesByGroupId('${gid}');},'${gnameEscaped} Review')">📋 Review Group</button>
+                <button class="btn btn-ghost btn-sm" onclick="window.MR.openGroupModal('${gid}')">✏️ Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="window.MR.deleteGroup('${gid}')">🗑️</button>
+              </div>
+            </div>
+            ${linkedLessons.length > 0 ? `
+              <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:8px;">Linked Lessons:</h4>
+              <div class="flex-row gap-8 mb-16">
+                ${linkedLessons.map(l => `<span style="background:var(--surface2);padding:4px 10px;border-radius:12px;font-size:0.8rem;">📖 ${escapeHtml(l.name)}</span>`).join('')}
+              </div>
+            ` : ''}
+            <h3 style="font-size:1rem;font-weight:600;margin-bottom:10px;">Mistakes (${sorted.length})</h3>
+            ${sorted.length === 0 ? '<div class="empty-state"><p>No mistakes in this group.</p></div>' : `
+              <div class="card-grid">${sorted.map(m => renderFullMistakeCard(m)).join('')}</div>
+            `}
+          `;
+            }
+
+            function renderSearchView() {
+                const query = state.searchQuery || '';
+                const allMistakes = data.mistakes;
+                let filtered = allMistakes;
+                if (query.trim()) {
+                    const q = query.toLowerCase();
+                    filtered = allMistakes.filter(m => {
+                        const subj = getSubject(m.subjectId);
+                        const less = getLesson(m.lessonId);
+                        return (m.title || '').toLowerCase().includes(q) ||
+                            (m.explanation || '').toLowerCase().includes(q) ||
+                            (m.correction || '').toLowerCase().includes(q) ||
+                            (m.formula || '').toLowerCase().includes(q) ||
+                            (m.tags || []).some(t => t.toLowerCase().includes(q)) ||
+                            (subj?.name || '').toLowerCase().includes(q) ||
+                            (less?.name || '').toLowerCase().includes(q);
+                    });
+                }
+                if (state.filterSubject) filtered = filtered.filter(m => m.subjectId === state.filterSubject);
+                if (state.filterLesson) filtered = filtered.filter(m => m.lessonId === state.filterLesson);
+                if (state.filterGroup) {
+                    const gm = getMistakesByGroup(state.filterGroup);
+                    const gids = new Set(gm.map(m => m.id));
+                    filtered = filtered.filter(m => gids.has(m.id));
+                }
+                const pinnedF = filtered.filter(m => m.pinned);
+                const unpinnedF = filtered.filter(m => !m.pinned);
+                const sorted = [...pinnedF, ...unpinnedF];
+
+                const subjectOptions = data.subjects.map(s =>
+                    `<option value="${s.id}" ${state.filterSubject===s.id?'selected':''}>${escapeHtml(s.name)}</option>`
+                    ).join('');
+                const groupOptions = data.recallGroups.map(g =>
+                    `<option value="${g.id}" ${state.filterGroup===g.id?'selected':''}>${escapeHtml(g.name)}</option>`
+                    ).join('');
+
+                const sortedIds = sorted.map(m => m.id);
+                const sortedIdsJson = JSON.stringify(sortedIds);
+
+                return `
+            <div class="mb-16">
+              <div class="search-bar-wrap" style="max-width:100%;margin-bottom:12px;">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search mistakes, subjects, lessons, tags..." value="${escapeHtml(query)}" oninput="window.MR.handleSearchInput(this.value)">
+              </div>
+              <div class="flex-row gap-8">
+                <select onchange="window.MR.navigateTo('search',{query:window.MR.getSearchQuery(),filterSubject:this.value||null,filterLesson:null,filterGroup:window.MR.getFilterGroup()})" style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.82rem;">
+                  <option value="">All Subjects</option>
+                  ${subjectOptions}
+                </select>
+                <select onchange="window.MR.navigateTo('search',{query:window.MR.getSearchQuery(),filterSubject:window.MR.getFilterSubject(),filterGroup:this.value||null})" style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:0.82rem;">
+                  <option value="">All Groups</option>
+                  ${groupOptions}
+                </select>
+                ${sorted.length > 0 ? `<button class="btn btn-secondary btn-sm" onclick="window.MR.startReviewByIds(${sortedIdsJson},'Search Results')">📋 Review ${sorted.length} Results</button>` : ''}
+                ${(query || state.filterSubject || state.filterGroup) ? `<button class="btn btn-ghost btn-sm" onclick="window.MR.navigateTo('search')">Clear Filters</button>` : ''}
+              </div>
+            </div>
+            <p class="text-muted mb-8">${sorted.length} mistake(s) found</p>
+            ${sorted.length === 0 ? '<div class="empty-state"><p>No mistakes match your search.</p></div>' : `
+              <div class="card-grid">${sorted.map(m => renderFullMistakeCard(m)).join('')}</div>
+            `}
+          `;
+            }
+
+            function renderPinnedView() {
+                const pinned = data.mistakes.filter(m => m.pinned);
+                const pinnedIds = pinned.map(m => m.id);
+                const pinnedIdsJson = JSON.stringify(pinnedIds);
+                return `
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:14px;">📌 Pinned Mistakes (${pinned.length})</h2>
+            ${pinned.length === 0 ? '<div class="empty-state"><div class="empty-icon">📌</div><p>No pinned mistakes. Pin important ones to see them here!</p></div>' : `
+              <div class="flex-row gap-8 mb-16">
+                <button class="btn btn-secondary btn-sm" onclick="window.MR.startReviewByIds(${pinnedIdsJson},'Pinned Mistakes')">📋 Review Pinned</button>
+              </div>
+              <div class="card-grid">${pinned.map(m => renderFullMistakeCard(m)).join('')}</div>
+            `}
+          `;
+            }
+
+            function renderSettings() {
+                return `
+            <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;">⚙️ Settings</h2>
+            <div class="card" style="margin-bottom:14px;">
+              <h4 style="margin-bottom:10px;">Appearance</h4>
+              <div class="flex-row gap-8 mb-8">
+                <label style="cursor:pointer;display:flex;align-items:center;gap:6px;">
+                  <input type="checkbox" ${data.settings.darkMode?'checked':''} onchange="window.MR.toggleDarkMode()"> Dark Mode
+                </label>
+              </div>
+              <div class="flex-row gap-8">
+                <span style="font-size:0.85rem;color:var(--text2);">Accent Color:</span>
+                ${['#5b9bff','#4caf84','#e0a955','#e0556a','#a855f7','#f97316','#38bdf8'].map(c => `
+                  <span class="color-dot ${data.settings.accentColor===c?'selected':''}" style="background:${c};width:24px;height:24px;display:inline-block;border-radius:50%;cursor:pointer;" onclick="window.MR.setAccentColor('${c}')"></span>
+                `).join('')}
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:14px;">
+              <h4 style="margin-bottom:10px;">Data Management</h4>
+              <div class="flex-row gap-8">
+                <button class="btn btn-secondary btn-sm" onclick="window.MR.exportData()">📥 Export Backup (JSON)</button>
+                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('importFileInput').click()">📤 Import Backup</button>
+                <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="window.MR.importData(event)">
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:14px;border:1px solid var(--danger);">
+              <h4 style="margin-bottom:10px;color:var(--danger);">Danger Zone</h4>
+              <button class="btn btn-danger btn-sm" onclick="window.MR.clearAllData()">🗑️ Clear All Data</button>
+            </div>
+            <div class="card">
+              <h4 style="margin-bottom:10px;">Keyboard Shortcuts</h4>
+              <p style="font-size:0.82rem;color:var(--text2);"><strong>N</strong> — Fast add mistake</p>
+              <p style="font-size:0.82rem;color:var(--text2);"><strong>← →</strong> — Navigate cards in review mode</p>
+              <p style="font-size:0.82rem;color:var(--text2);"><strong>S</strong> — Toggle shuffle in review mode</p>
+              <p style="font-size:0.82rem;color:var(--text2);"><strong>Esc</strong> — Close modals / exit review</p>
+            </div>
+          `;
+            }
+
+            // ────────────────────────────────────
+            // REVIEW OVERLAY
+            // ────────────────────────────────────
+            function renderReviewOverlay() {
+                const overlay = document.getElementById('reviewOverlay');
+                if (!overlay) return;
+                if (state.currentView !== 'review' || state.reviewQueue.length === 0) {
+                    overlay.classList.add('hidden');
+                    overlay.innerHTML = '';
+                    return;
+                }
+                overlay.classList.remove('hidden');
+                const mistake = state.reviewQueue[state.reviewIndex];
+                if (!mistake) {
+                    overlay.innerHTML =
+                        '<button class="review-close" onclick="window.MR.closeReview()">✕ Close</button><div class="review-empty" style="padding-top:80px;">No more cards.</div>';
+                    return;
+                }
+                const subj = getSubject(mistake.subjectId);
+                const less = getLesson(mistake.lessonId);
+                const total = state.reviewQueue.length;
+                const current = state.reviewIndex + 1;
+
+                overlay.innerHTML = `
+            <button class="review-close" onclick="window.MR.closeReview()">✕ Exit Review</button>
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;padding:20px;">
+              <div class="review-card-wrap">
+                <div class="review-card" id="reviewCard">
+                  ${mistake.pinned ? '<span class="r-pinned-badge">📌 Pinned</span>' : ''}
+                  <div class="r-subject">${escapeHtml(subj?.name || '')} · ${escapeHtml(less?.name || '')}</div>
+                  <div class="r-title">${escapeHtml(mistake.title)}</div>
+                  ${mistake.explanation ? `<div class="r-explanation">${escapeHtml(mistake.explanation)}</div>` : ''}
+                  ${mistake.correction ? `<div class="r-correction">💡 ${escapeHtml(mistake.correction)}</div>` : ''}
+                  ${mistake.formula ? `<div class="r-formula">${escapeHtml(mistake.formula)}</div>` : ''}
+                  ${mistake.image ? `<div style="margin-top:10px;"><img src="${mistake.image}" alt="screenshot" style="max-width:100%;max-height:250px;border-radius:6px;border:1px solid var(--border);" /></div>` : ''}
+                  ${(mistake.tags || []).length > 0 ? `<div class="card-tags" style="margin-top:10px;">${mistake.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+                </div>
+                <div class="review-nav">
+                  <button class="nav-btn" onclick="window.MR.prevCard()" ${current===1?'disabled':''} title="Previous (←)">←</button>
+                  <span class="review-progress">${current} / ${total}</span>
+                  <button class="nav-btn" onclick="window.MR.nextCard()" ${current===total?'disabled':''} title="Next (→)">→</button>
+                  <button class="btn btn-ghost btn-sm" onclick="window.MR.toggleShuffleReview()" title="Shuffle (S)">🔀 ${state.reviewShuffle?'Shuffled':'Shuffle'}</button>
+                  <button class="btn btn-secondary btn-sm" onclick="window.MR.jumpToCard()">🔢 Jump</button>
+                </div>
+              </div>
+            </div>`;
+            }
+
+            function closeReview() {
+                state.currentView = 'dashboard';
+                state.reviewQueue = [];
+                state.reviewIndex = 0;
+                const overlay = document.getElementById('reviewOverlay');
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                    overlay.innerHTML = '';
+                }
+                renderAll();
+            }
+
+            function nextCard() {
+                if (state.reviewIndex < state.reviewQueue.length - 1) {
+                    state.reviewIndex++;
+                    renderReviewOverlay();
+                }
+            }
+
+            function prevCard() {
+                if (state.reviewIndex > 0) {
+                    state.reviewIndex--;
+                    renderReviewOverlay();
+                }
+            }
+
+            function toggleShuffleReview() {
+                state.reviewShuffle = !state.reviewShuffle;
+                const queue = state.reviewQueue;
+                const pinned = queue.filter(m => m.pinned);
+                const unpinned = queue.filter(m => !m.pinned);
+                if (state.reviewShuffle) {
+                    state.reviewQueue = [...shuffleArray(pinned), ...shuffleArray(unpinned)];
+                } else {
+                    state.reviewQueue = [...pinned, ...unpinned];
+                }
+                state.reviewIndex = 0;
+                renderReviewOverlay();
+                showToast(state.reviewShuffle ? 'Shuffle ON' : 'Shuffle OFF');
+            }
+
+            function jumpToCard() {
+                const total = state.reviewQueue.length;
+                const num = prompt(`Jump to card (1-${total}):`, state.reviewIndex + 1);
+                if (num !== null) {
+                    const idx = parseInt(num) - 1;
+                    if (idx >= 0 && idx < total) {
+                        state.reviewIndex = idx;
+                        renderReviewOverlay();
+                    }
+                }
+            }
+
+            function startReviewByIds(ids, label) {
+                const idSet = new Set(ids);
+                const queue = data.mistakes.filter(m => idSet.has(m.id));
+                startReview(queue, label);
+            }
+
+            // ────────────────────────────────────
+            // MODALS
+            // ────────────────────────────────────
+            function showModal(html) {
+                const container = document.getElementById('modalContainer');
+                if (!container) return;
+                container.innerHTML = `
+            <div class="modal-overlay" id="modalOverlayBg" onclick="if(event.target===this)window.MR.closeModal()">
+              <div class="modal">${html}</div>
+            </div>`;
+            }
+
+            function closeModal() {
+                const container = document.getElementById('modalContainer');
+                if (container) container.innerHTML = '';
+                window._existingMistakeImage = null;
+            }
+
+            function openSubjectModal(id = null) {
+                const subj = id ? getSubject(id) : null;
+                const isEdit = !!subj;
+                const subjColor = subj?.color || '#5b9bff';
+                showModal(`
+            <h3>${isEdit ? 'Edit Subject' : 'New Subject'}</h3>
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="subjName" value="${escapeHtml(subj?.name || '')}" placeholder="e.g., Math, Physics..." autofocus>
+            </div>
+            <div class="form-group">
+              <label>Icon (emoji)</label>
+              <input type="text" id="subjIcon" value="${escapeHtml(subj?.icon || '📘')}" placeholder="📘">
+            </div>
+            <div class="form-group">
+              <label>Color</label>
+              <div class="color-options" id="subjColorOptions">
+                ${['#5b9bff','#4caf84','#e0a955','#e0556a','#a855f7','#f97316','#38bdf8','#fb7185','#10b981'].map(c => `
+                  <span class="color-dot ${subjColor===c?'selected':''}" style="background:${c};" data-color="${c}" onclick="window.MR.selectSubjColor('${c}')"></span>
+                `).join('')}
+              </div>
+              <input type="hidden" id="subjColor" value="${subjColor}">
+            </div>
+            <div class="form-group">
+              <label>Description (optional)</label>
+              <input type="text" id="subjDesc" value="${escapeHtml(subj?.description || '')}" placeholder="Short description...">
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-secondary" onclick="window.MR.closeModal()">Cancel</button>
+              <button class="btn btn-primary" id="saveSubjBtn" onclick="window.MR.saveSubject('${id || ''}')">${isEdit ? 'Save' : 'Create'}</button>
+            </div>`);
+            }
+
+            function selectSubjColor(c) {
+                document.getElementById('subjColor').value = c;
+                document.querySelectorAll('#subjColorOptions .color-dot').forEach(d => d.classList.remove('selected'));
+                const dot = document.querySelector(`#subjColorOptions .color-dot[data-color="${c}"]`);
+                if (dot) dot.classList.add('selected');
+            }
+
+            function saveSubject(id) {
+                const nameEl = document.getElementById('subjName');
+                const name = nameEl ? nameEl.value.trim() : '';
+                if (!name) { showToast('Name is required.'); return; }
+                const iconEl = document.getElementById('subjIcon');
+                const icon = (iconEl ? iconEl.value.trim() : '') || '📘';
+                const colorEl = document.getElementById('subjColor');
+                const color = (colorEl ? colorEl.value : '') || '#5b9bff';
+                const descEl = document.getElementById('subjDesc');
+                const description = descEl ? descEl.value.trim() : '';
+                if (id) {
+                    const subj = getSubject(id);
+                    if (subj) {
+                        subj.name = name;
+                        subj.icon = icon;
+                        subj.color = color;
+                        subj.description = description;
+                    }
+                } else {
+                    data.subjects.push({ id: genId(), name, icon, color, description, createdAt: new Date()
+                        .toISOString() });
+                }
+                saveData();
+                closeModal();
+                renderAll();
+                showToast(id ? 'Subject updated.' : 'Subject created.');
+            }
+
+            function deleteSubject(id) {
+                if (data.settings.confirmDelete && !confirm(
+                        'Delete this subject and ALL its lessons and mistakes? This cannot be undone.')) return;
+                const lessonIds = data.lessons.filter(l => l.subjectId === id).map(l => l.id);
+                data.mistakes = data.mistakes.filter(m => !lessonIds.includes(m.lessonId) && m.subjectId !== id);
+                data.lessons = data.lessons.filter(l => l.subjectId !== id);
+                data.subjects = data.subjects.filter(s => s.id !== id);
+                data.recallGroups.forEach(g => {
+                    g.lessonIds = (g.lessonIds || []).filter(lid => !lessonIds.includes(lid));
+                    g.mistakeIds = (g.mistakeIds || []).filter(mid => {
+                        const m = getMistake(mid);
+                        return m && !lessonIds.includes(m.lessonId);
+                    });
+                });
+                saveData();
+                navigateTo('dashboard');
+                showToast('Subject deleted.');
+            }
+
+            function openLessonModal(subjectId, id = null) {
+                const lesson = id ? getLesson(id) : null;
+                const isEdit = !!lesson;
+                const subjOptions = data.subjects.map(s =>
+                    `<option value="${s.id}" ${(lesson?.subjectId||subjectId)===s.id?'selected':''}>${escapeHtml(s.name)}</option>`
+                    ).join('');
+                showModal(`
+            <h3>${isEdit ? 'Edit Lesson' : 'New Lesson'}</h3>
+            <div class="form-group">
+              <label>Subject</label>
+              <select id="lessonSubject">${subjOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Lesson Name</label>
+              <input type="text" id="lessonName" value="${escapeHtml(lesson?.name || '')}" placeholder="e.g., Derivatives, Complex Numbers..." autofocus>
+            </div>
+            <div class="form-group">
+              <label>Note (optional)</label>
+              <input type="text" id="lessonNote" value="${escapeHtml(lesson?.note || '')}" placeholder="Optional note...">
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-secondary" onclick="window.MR.closeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="window.MR.saveLesson('${id || ''}')">${isEdit ? 'Save' : 'Create'}</button>
+            </div>`);
+            }
+
+            function saveLesson(id) {
+                const nameEl = document.getElementById('lessonName');
+                const name = nameEl ? nameEl.value.trim() : '';
+                if (!name) { showToast('Name is required.'); return; }
+                const subjectIdEl = document.getElementById('lessonSubject');
+                const subjectId = subjectIdEl ? subjectIdEl.value : '';
+                const noteEl = document.getElementById('lessonNote');
+                const note = noteEl ? noteEl.value.trim() : '';
+                if (id) {
+                    const lesson = getLesson(id);
+                    if (lesson) {
+                        lesson.name = name;
+                        lesson.subjectId = subjectId;
+                        lesson.note = note;
+                    }
+                } else {
+                    data.lessons.push({ id: genId(), subjectId, name, note, createdAt: new Date().toISOString() });
+                }
+                saveData();
+                closeModal();
+                renderAll();
+                if (state.currentView === 'subjectDetail' && state.currentSubjectId === subjectId) {
+                    navigateTo('subjectDetail', { subjectId });
+                }
+                showToast(id ? 'Lesson updated.' : 'Lesson created.');
+            }
+
+            function deleteLesson(id) {
+                const lesson = getLesson(id);
+                if (!lesson) return;
+                if (data.settings.confirmDelete && !confirm(
+                        'Delete this lesson and ALL its mistakes? This cannot be undone.')) return;
+                data.mistakes = data.mistakes.filter(m => m.lessonId !== id);
+                data.lessons = data.lessons.filter(l => l.id !== id);
+                data.recallGroups.forEach(g => {
+                    g.lessonIds = (g.lessonIds || []).filter(lid => lid !== id);
+                });
+                saveData();
+                navigateTo('subjectDetail', { subjectId: lesson.subjectId });
+                showToast('Lesson deleted.');
+            }
+
+            function openMistakeModal(subjectId = null, lessonId = null, id = null) {
+                const mistake = id ? getMistake(id) : null;
+                const isEdit = !!mistake;
+                const subjOptions = data.subjects.map(s =>
+                    `<option value="${s.id}" ${(mistake?.subjectId||subjectId||'')===s.id?'selected':''}>${escapeHtml(s.name)}</option>`
+                    ).join('');
+                const selSubjId = mistake?.subjectId || subjectId || (data.subjects[0]?.id || '');
+                const lessonOptions = data.lessons.filter(l => l.subjectId === selSubjId).map(l =>
+                    `<option value="${l.id}" ${(mistake?.lessonId||lessonId||'')===l.id?'selected':''}>${escapeHtml(l.name)}</option>`
+                    ).join('');
+                const allTags = ['formula mistake', 'sign mistake', 'method mistake', 'concept mistake', 'carelessness',
+                    'exam trap'
+                ];
+                const currentTags = mistake?.tags || [];
+                const tagsCheckboxes = allTags.map(t =>
+                    `<label class="checkbox-label"><input type="checkbox" value="${t}" ${currentTags.includes(t)?'checked':''}> ${t}</label>`
+                    ).join('');
+
+                window._existingMistakeImage = mistake?.image || null;
+
+                showModal(`
+            <h3>${isEdit ? 'Edit Mistake' : 'Fast Add Mistake'}</h3>
+            <div class="form-group">
+              <label>Subject</label>
+              <select id="mistSubject" onchange="window.MR.updateMistLessonOptions()">${subjOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Lesson</label>
+              <select id="mistLesson">${lessonOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Mistake Title *</label>
+              <input type="text" id="mistTitle" value="${escapeHtml(mistake?.title || '')}" placeholder="e.g., Forgot chain rule in composite function" autofocus>
+            </div>
+            <div class="form-group">
+              <label>Short Explanation (optional)</label>
+              <textarea id="mistExplanation" placeholder="What went wrong...">${escapeHtml(mistake?.explanation || '')}</textarea>
+            </div>
+            <div class="form-group">
+              <label>Correction / Correct Idea</label>
+              <textarea id="mistCorrection" placeholder="The correct approach...">${escapeHtml(mistake?.correction || '')}</textarea>
+            </div>
+            <div class="form-group">
+              <label>Formula / Key Point (optional)</label>
+              <input type="text" id="mistFormula" value="${escapeHtml(mistake?.formula || '')}" placeholder="e.g., d/dx[f(g(x))] = f'(g(x))·g'(x)">
+            </div>
+            <div class="form-group">
+              <label>Tags (optional)</label>
+              <div class="checkbox-group" id="mistTagsCheckboxes">${tagsCheckboxes}</div>
+            </div>
+            <div class="form-group">
+              <label>Screenshot / Image (optional)</label>
+              <input type="file" id="mistImageFile" accept="image/*" style="font-size:0.85rem;">
+              <p class="text-muted" style="margin-top:4px;">Or paste an image from clipboard anywhere in this modal.</p>
+              ${mistake?.image ? '<p class="text-muted">Current image will be replaced if new one uploaded.</p>' : ''}
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-secondary" onclick="window.MR.closeModal()">Cancel</button>
+              <button class="btn btn-primary" id="saveMistakeBtn" onclick="window.MR.saveMistake('${id || ''}')">${isEdit ? 'Save' : 'Add Mistake'}</button>
+            </div>`);
+            }
+
+            function updateMistLessonOptions() {
+                const subjIdEl = document.getElementById('mistSubject');
+                const selectEl = document.getElementById('mistLesson');
+                if (!selectEl || !subjIdEl) return;
+                const subjId = subjIdEl.value;
+                const lessons = data.lessons.filter(l => l.subjectId === subjId);
+                selectEl.innerHTML = lessons.map(l =>
+                    `<option value="${l.id}">${escapeHtml(l.name)}</option>`
+                ).join('') || '<option value="">No lessons yet</option>';
+            }
+
+            function saveMistake(id) {
+                const titleEl = document.getElementById('mistTitle');
+                const title = titleEl ? titleEl.value.trim() : '';
+                if (!title) { showToast('Title is required.'); return; }
+                const subjectIdEl = document.getElementById('mistSubject');
+                const subjectId = subjectIdEl ? subjectIdEl.value : '';
+                const lessonIdEl = document.getElementById('mistLesson');
+                const lessonId = lessonIdEl ? lessonIdEl.value : '';
+                const explEl = document.getElementById('mistExplanation');
+                const explanation = explEl ? explEl.value.trim() : '';
+                const corrEl = document.getElementById('mistCorrection');
+                const correction = corrEl ? corrEl.value.trim() : '';
+                const formulaEl = document.getElementById('mistFormula');
+                const formula = formulaEl ? formulaEl.value.trim() : '';
+                const tagCheckboxes = document.querySelectorAll('#mistTagsCheckboxes input:checked');
+                const tags = Array.from(tagCheckboxes).map(cb => cb.value);
+                const imageFileEl = document.getElementById('mistImageFile');
+                const imageFile = imageFileEl ? imageFileEl.files?.[0] : null;
+
+                function finalizeSave(imageData) {
+                    if (id) {
+                        const mistake = getMistake(id);
+                        if (mistake) {
+                            mistake.title = title;
+                            mistake.subjectId = subjectId;
+                            mistake.lessonId = lessonId;
+                            mistake.explanation = explanation;
+                            mistake.correction = correction;
+                            mistake.formula = formula;
+                            mistake.tags = tags;
+                            if (imageData !== undefined) mistake.image = imageData;
+                        }
+                    } else {
+                        data.mistakes.push({
+                            id: genId(),
+                            subjectId,
+                            lessonId,
+                            title,
+                            explanation,
+                            correction,
+                            formula,
+                            tags,
+                            image: imageData || null,
+                            pinned: false,
+                            dateAdded: new Date().toISOString(),
+                            archived: false,
+                        });
+                    }
+                    saveData();
+                    closeModal();
+                    renderAll();
+                    if (state.currentView === 'lessonDetail' && state.currentLessonId === lessonId) {
+                        navigateTo('lessonDetail', { lessonId, subjectId });
+                    } else if (state.currentView === 'subjectDetail' && state.currentSubjectId === subjectId) {
+                        navigateTo('subjectDetail', { subjectId });
+                    }
+                    showToast(id ? 'Mistake updated.' : 'Mistake added!');
+                }
+
+                if (imageFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        finalizeSave(e.target.result);
+                    };
+                    reader.readAsDataURL(imageFile);
+                } else if (window._existingMistakeImage && !imageFile) {
+                    finalizeSave(window._existingMistakeImage);
+                } else {
+                    finalizeSave(id ? (getMistake(id)?.image || null) : null);
+                }
+                window._existingMistakeImage = null;
+            }
+
+            function duplicateMistake(id) {
+                const orig = getMistake(id);
+                if (!orig) return;
+                const copy = {
+                    ...orig,
+                    id: genId(),
+                    title: orig.title + ' (copy)',
+                    dateAdded: new Date().toISOString(),
+                    pinned: false,
+                };
+                data.mistakes.push(copy);
+                saveData();
+                renderAll();
+                showToast('Mistake duplicated.');
+            }
+
+            function deleteMistake(id) {
+                const mistake = getMistake(id);
+                if (!mistake) return;
+                if (data.settings.confirmDelete && !confirm('Delete this mistake?')) return;
+                data.mistakes = data.mistakes.filter(m => m.id !== id);
+                data.recallGroups.forEach(g => {
+                    g.mistakeIds = (g.mistakeIds || []).filter(mid => mid !== id);
+                });
+                saveData();
+                renderAll();
+                showToast('Mistake deleted.');
+            }
+
+            function togglePin(id) {
+                const mistake = getMistake(id);
+                if (!mistake) return;
+                mistake.pinned = !mistake.pinned;
+                saveData();
+                renderAll();
+                showToast(mistake.pinned ? 'Pinned 📌' : 'Unpinned');
+            }
+
+            function openGroupModal(id = null) {
+                const group = id ? getGroup(id) : null;
+                const isEdit = !!group;
+                const allLessons = data.lessons;
+                const selectedLessonIds = group?.lessonIds || [];
+                const grpColor = group?.color || '#a855f7';
+
+                const lessonCheckboxes = allLessons.map(l => {
+                    const subj = getSubject(l.subjectId);
+                    return `
+                <label class="checkbox-label">
+                  <input type="checkbox" value="${l.id}" class="grp-lesson-cb" ${selectedLessonIds.includes(l.id)?'checked':''}>
+                  <span style="color:${subj?.color||'var(--accent)'};">${escapeHtml(subj?.name||'?')}</span> → ${escapeHtml(l.name)}
+                </label>`;
+                }).join('');
+
+                showModal(`
+            <h3>${isEdit ? 'Edit Recall Group' : 'New Recall Group'}</h3>
+            <div class="form-group">
+              <label>Group Name</label>
+              <input type="text" id="grpName" value="${escapeHtml(group?.name || '')}" placeholder="e.g., BAC Geometry Bundle" autofocus>
+            </div>
+            <div class="form-group">
+              <label>Color</label>
+              <div class="color-options" id="grpColorOptions">
+                ${['#a855f7','#5b9bff','#4caf84','#e0a955','#e0556a','#f97316'].map(c => `
+                  <span class="color-dot ${grpColor===c?'selected':''}" style="background:${c};" data-color="${c}" onclick="window.MR.selectGrpColor('${c}')"></span>
+                `).join('')}
+              </div>
+              <input type="hidden" id="grpColor" value="${grpColor}">
+            </div>
+            <div class="form-group">
+              <label>Select Lessons to Include</label>
+              <div class="checkbox-group" style="max-height:200px;overflow-y:auto;">
+                ${lessonCheckboxes || '<p class="text-muted">No lessons available. Create lessons first.</p>'}
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-secondary" onclick="window.MR.closeModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="window.MR.saveGroup('${id || ''}')">${isEdit ? 'Save' : 'Create Group'}</button>
+            </div>`);
+            }
+
+            function selectGrpColor(c) {
+                document.getElementById('grpColor').value = c;
+                document.querySelectorAll('#grpColorOptions .color-dot').forEach(d => d.classList.remove('selected'));
+                const dot = document.querySelector(`#grpColorOptions .color-dot[data-color="${c}"]`);
+                if (dot) dot.classList.add('selected');
+            }
+
+            function saveGroup(id) {
+                const nameEl = document.getElementById('grpName');
+                const name = nameEl ? nameEl.value.trim() : '';
+                if (!name) { showToast('Name is required.'); return; }
+                const colorEl = document.getElementById('grpColor');
+                const color = (colorEl ? colorEl.value : '') || '#a855f7';
+                const lessonCbs = document.querySelectorAll('.grp-lesson-cb:checked');
+                const lessonIds = Array.from(lessonCbs).map(cb => cb.value);
+                if (id) {
+                    const group = getGroup(id);
+                    if (group) {
+                        group.name = name;
+                        group.color = color;
+                        group.lessonIds = lessonIds;
+                    }
+                } else {
+                    data.recallGroups.push({
+                        id: genId(),
+                        name,
+                        color,
+                        lessonIds,
+                        mistakeIds: [],
+                        createdAt: new Date().toISOString(),
+                    });
+                }
+                saveData();
+                closeModal();
+                renderAll();
+                showToast(id ? 'Group updated.' : 'Group created.');
+            }
+
+            function deleteGroup(id) {
+                if (data.settings.confirmDelete && !confirm('Delete this recall group?')) return;
+                data.recallGroups = data.recallGroups.filter(g => g.id !== id);
+                saveData();
+                navigateTo('recallGroups');
+                showToast('Group deleted.');
+            }
+
+            // ────────────────────────────────────
+            // SEARCH STATE HELPERS
+            // ────────────────────────────────────
+            function handleSearchInput(value) {
+                state.searchQuery = value;
+                navigateTo('search', {
+                    query: value,
+                    filterSubject: state.filterSubject,
+                    filterLesson: state.filterLesson,
+                    filterGroup: state.filterGroup,
+                });
+            }
+
+            function getSearchQuery() { return state.searchQuery; }
+
+            function getFilterSubject() { return state.filterSubject; }
+
+            function getFilterGroup() { return state.filterGroup; }
+
+            // ────────────────────────────────────
+            // SETTINGS ACTIONS
+            // ────────────────────────────────────
+            function toggleDarkMode() {
+                data.settings.darkMode = !data.settings.darkMode;
+                saveData();
+                applySettings();
+                showToast(data.settings.darkMode ? 'Dark mode ON' : 'Light mode ON');
+            }
+
+            function setAccentColor(color) {
+                data.settings.accentColor = color;
+                saveData();
+                applySettings();
+                renderAll();
+                showToast('Accent color updated.');
+            }
+
+            function exportData() {
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'mistakes-recall-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('Backup exported!');
+            }
+
+            function importData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if (imported.subjects && imported.lessons && imported.mistakes && imported.recallGroups) {
+                            if (data.settings.confirmDelete && data.mistakes.length > 0 && !confirm(
+                                    'Importing will REPLACE all current data. Continue?')) return;
+                            data = {
+                                subjects: imported.subjects,
+                                lessons: imported.lessons,
+                                mistakes: imported.mistakes,
+                                recallGroups: imported.recallGroups,
+                                settings: imported.settings || data.settings,
+                            };
+                            saveData();
+                            applySettings();
+                            navigateTo('dashboard');
+                            showToast('Data imported successfully!');
+                        } else {
+                            showToast('Invalid backup file.');
+                        }
+                    } catch (err) {
+                        showToast('Error importing file.');
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            }
+
+            function clearAllData() {
+                if (!confirm(
+                        'Delete ALL data? This includes all subjects, lessons, mistakes, and recall groups. This cannot be undone.'
+                        )) return;
+                if (!confirm('Are you absolutely sure? This action is irreversible.')) return;
+                data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                saveData();
+                applySettings();
+                navigateTo('dashboard');
+                showToast('All data cleared.');
+            }
+
+            // ────────────────────────────────────
+            // SIDEBAR TOGGLE (MOBILE)
+            // ────────────────────────────────────
+            function toggleSidebar() {
+                state.sidebarOpen = !state.sidebarOpen;
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    if (state.sidebarOpen) {
+                        sidebar.classList.add('open');
+                    } else {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            }
+
+            // ────────────────────────────────────
+            // EXPOSE PUBLIC API VIA window.MR
+            // ────────────────────────────────────
+            const MR = {
+                navigateTo,
+                startReview,
+                startReviewByIds,
+                closeReview,
+                nextCard,
+                prevCard,
+                toggleShuffleReview,
+                jumpToCard,
+                openSubjectModal,
+                openLessonModal,
+                openMistakeModal,
+                openGroupModal,
+                closeModal,
+                saveSubject,
+                saveLesson,
+                saveMistake,
+                saveGroup,
+                deleteSubject,
+                deleteLesson,
+                deleteMistake,
+                deleteGroup,
+                togglePin,
+                duplicateMistake,
+                handleSearchInput,
+                toggleDarkMode,
+                setAccentColor,
+                exportData,
+                importData,
+                clearAllData,
+                toggleSidebar,
+                updateMistLessonOptions,
+                selectSubjColor,
+                selectGrpColor,
+                getAllMistakes: getAllMistakes,
+                getPinnedMistakes: getPinnedMistakes,
+                getMistakesBySubjectId: getMistakesBySubject,
+                getMistakesByLessonId: getMistakesByLesson,
+                getMistakesByGroupId: getMistakesByGroup,
+                getSearchQuery,
+                getFilterSubject,
+                getFilterGroup,
+            };
+
+            window.MR = MR;
+
+            // ────────────────────────────────────
+            // GLOBAL KEYBOARD SHORTCUTS
+            // ────────────────────────────────────
+            document.addEventListener('keydown', function(e) {
+                const tag = document.activeElement?.tagName?.toLowerCase();
+                const isInput = tag === 'input' || tag === 'textarea' || tag === 'select' || document.activeElement
+                    ?.isContentEditable;
+
+                if (state.currentView === 'review') {
+                    if (e.key === 'ArrowRight' && !isInput) {
+                        e.preventDefault();
+                        nextCard();
+                    } else if (e.key === 'ArrowLeft' && !isInput) {
+                        e.preventDefault();
+                        prevCard();
+                    } else if (e.key === 's' && !isInput && !e.ctrlKey && !e.metaKey) {
+                        e.preventDefault();
+                        toggleShuffleReview();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        closeReview();
+                    }
+                } else {
+                    if (e.key === 'n' && !isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                        const modalContainer = document.getElementById('modalContainer');
+                        if (!modalContainer || !modalContainer.innerHTML.trim()) {
+                            e.preventDefault();
+                            openMistakeModal();
+                        }
+                    } else if (e.key === 'Escape') {
+                        const modalContainer = document.getElementById('modalContainer');
+                        if (modalContainer && modalContainer.innerHTML.trim()) {
+                            e.preventDefault();
+                            closeModal();
+                        }
+                    }
+                }
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 768 && state.sidebarOpen) {
+                    const sidebar = document.getElementById('sidebar');
+                    const menuBtn = document.querySelector('.menu-btn');
+                    if (sidebar && !sidebar.contains(e.target) && menuBtn && !menuBtn.contains(e.target)) {
+                        state.sidebarOpen = false;
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+
+            // ────────────────────────────────────
+            // PASTE IMAGE SUPPORT
+            // ────────────────────────────────────
+            document.addEventListener('paste', function(e) {
+                const modalContainer = document.getElementById('modalContainer');
+                if (!modalContainer || !modalContainer.innerHTML.trim()) return;
+                const items = e.clipboardData?.items;
+                if (!items) return;
+                for (const item of items) {
+                    if (item.type.startsWith('image/')) {
+                        e.preventDefault();
+                        const blob = item.getAsFile();
+                        const reader = new FileReader();
+                        reader.onload = function(ev) {
+                            window._existingMistakeImage = ev.target.result;
+                            showToast('Image pasted! Save the mistake to keep it.');
+                        };
+                        reader.readAsDataURL(blob);
+                        break;
+                    }
+                }
+            });
+
+            // ────────────────────────────────────
+            // INIT
+            // ────────────────────────────────────
+            renderAll();
+            console.log('📝 Mistakes Recall — Ready');
+            console.log('Shortcuts: N = Fast Add | ←→ = Navigate cards | S = Shuffle | Esc = Close');
+            console.log(
+                `Loaded: ${data.mistakes.length} mistakes, ${data.subjects.length} subjects, ${data.lessons.length} lessons, ${data.recallGroups.length} groups`
+                );
+        })();
+    </script>
+</body>
+</html>
